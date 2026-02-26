@@ -16,6 +16,13 @@ const profileFields = [
 ];
 
 // GET: unswiped profiles for the current user's feed
+// helper to convert Mongo documents to API shape
+function normalizeProfile(doc) {
+  if (!doc) return doc;
+  const { _id, ...rest } = doc;
+  return { id: _id || doc.id, ...rest };
+}
+
 router.get("/feed", async (req, res) => {
   try {
     const userId = req.session?.user_id;
@@ -72,8 +79,8 @@ router.get("/feed", async (req, res) => {
       // If preference is 'A' (any), don't add filter
     }
 
-    const profiles = await db.collection('profiles').aggregate(pipeline).toArray();
-    
+    let profiles = await db.collection('profiles').aggregate(pipeline).toArray();
+    profiles = profiles.map(normalizeProfile);
     return res.json({ profiles });
   } catch (error) {
     console.error('[ERROR] get feed profiles:', error);
@@ -117,6 +124,8 @@ router.get("/", async (req, res) => {
       }
     }
     
+    // convert Mongo documents to API-friendly objects
+    profiles = profiles.map(normalizeProfile);
     return res.json({ profiles });
   } catch (error) {
     console.error('[ERROR] get profiles:', error);
@@ -139,7 +148,7 @@ router.get("/me", async (req, res) => {
       return res.status(404).json({ detail: "profile not found" });
     }
 
-    return res.json({ profile });
+    return res.json({ profile: normalizeProfile(profile) });
   } catch (error) {
     console.error('[ERROR] get my profile:', error);
     return res.status(500).json({ detail: "failed to get profile" });
@@ -188,7 +197,7 @@ router.get("/:id", async (req, res) => {
       return res.status(404).json({ detail: "profile not found" });
     }
     
-    return res.json({ profile });
+    return res.json({ profile: normalizeProfile(profile) });
   } catch (error) {
     console.error('[ERROR] get profile by id:', error);
     return res.status(500).json({ detail: "failed to get profile" });
@@ -225,7 +234,7 @@ router.post("/", async (req, res) => {
 
     await db.collection('profiles').insertOne(payload);
 
-    return res.status(201).json({ profile: payload });
+    return res.status(201).json({ profile: normalizeProfile(payload) });
   } catch (error) {
     console.error('[ERROR] create profile:', error);
     return res.status(500).json({ detail: "failed to create profile" });
@@ -270,7 +279,7 @@ router.put("/:id", async (req, res) => {
     );
 
     const updated = await db.collection('profiles').findOne({ _id: req.params.id });
-    return res.json({ profile: updated });
+    return res.json({ profile: normalizeProfile(updated) });
   } catch (error) {
     console.error('[ERROR] update profile:', error);
     return res.status(500).json({ detail: "failed to update profile" });

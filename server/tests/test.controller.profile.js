@@ -78,6 +78,7 @@ describe("Profile Controller", () => {
       const response = await request(app).get("/profiles/profile-1");
 
       expect(response.status).toBe(200);
+      expect(response.body.profile.id).toBe(mockProfile.id);
       expect(response.body.profile).toEqual(mockProfile);
     });
 
@@ -180,6 +181,7 @@ describe("Profile Controller", () => {
         });
 
       expect(response.status).toBe(201);
+      expect(response.body.profile.id).toBeDefined();
       expect(response.body.profile).toMatchObject({
         name: "New User",
         age: 25,
