@@ -58,6 +58,7 @@ export default function ProfileOptions({ onLogout }) {
   const [profileId, setProfileId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
   const [locationTried, setLocationTried] = useState(false);
   const [locationLoading, setLocationLoading] = useState(false);
   const [locationSuccess, setLocationSuccess] = useState(false);
@@ -256,6 +257,8 @@ export default function ProfileOptions({ onLogout }) {
       }
       setIsEditing(false);
       setShowManualLocation(false); // Hide manual location inputs
+      setSuccessMsg("Profile saved successfully.");
+      setTimeout(() => setSuccessMsg(""), 3000);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -337,6 +340,9 @@ export default function ProfileOptions({ onLogout }) {
 
   // Don't show error at page level, only in edit mode
   if (error && !isEditing && !profileData.name) {
+    // When we don't have any profile data and there's an error, show a
+    // dedicated loading-style error message with retry. Other errors (e.g.
+    // a save failure while editing) are shown inline while editing.
     return (
       <div className="profile-container">
         <div className="profile-loading">
@@ -360,6 +366,11 @@ export default function ProfileOptions({ onLogout }) {
       {!isEditing ? (
         /* ============ VIEW MODE ============ */
         <div className="profile-view">
+          {successMsg && (
+            <div className="success-message" style={{ marginBottom: '12px' }}>
+              {successMsg}
+            </div>
+          )}
           {/* Hero / Avatar */}
           <div className="profile-hero">
             <div className="profile-avatar-ring">
@@ -671,11 +682,12 @@ export default function ProfileOptions({ onLogout }) {
                   </div>
                 )}
                 
-                {/* Show error if any - only location related errors */}
-                {error && error.includes("Location") && (
+                {/* Show error if any */}
+                {error && (
                   <div className="error-message">
                     {error}
-                    {error.includes("denied") && (
+                    {/* Provide extra guidance for location errors */}
+                    {error.includes("Location") && error.includes("denied") && (
                       <div style={{ marginTop: '8px', fontSize: '12px', opacity: 0.8 }}>
                         💡 No problem! You can enter your coordinates manually above, or follow these steps:
                         <br/>
@@ -728,6 +740,7 @@ export default function ProfileOptions({ onLogout }) {
               type="button"
               className="profile-action-btn secondary"
               onClick={handleCancel}
+              disabled={loading}
             >
               Cancel
             </button>
@@ -735,8 +748,9 @@ export default function ProfileOptions({ onLogout }) {
               type="button"
               className="profile-action-btn primary"
               onClick={handleSaveProfile}
+              disabled={loading}
             >
-              Save Changes
+              {loading ? "Saving..." : "Save Changes"}
             </button>
           </div>
         </div>
