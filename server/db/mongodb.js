@@ -12,7 +12,14 @@ export async function connectToDatabase() {
   }
 
   try {
-    client = new MongoClient(MONGODB_URI);
+    // MongoDB connection options with SSL configuration
+    const options = {
+      tls: true,
+      tlsAllowInvalidCertificates: true,
+      tlsAllowInvalidHostnames: true,
+    };
+
+    client = new MongoClient(MONGODB_URI, options);
     await client.connect();
     db = client.db(DATABASE_NAME);
     
