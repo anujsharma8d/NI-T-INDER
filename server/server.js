@@ -25,8 +25,25 @@ async function initializeDatabase() {
   }
 }
 
-// Initialize database before starting server
-initializeDatabase();
+// Log important configuration so issues can be diagnosed in deployment
+console.log('[Config] NODE_ENV=', process.env.NODE_ENV);
+console.log('[Config] PORT=', PORT);
+console.log('[Config] FRONTEND_URL=', process.env.FRONTEND_URL);
+console.log('[Config] MONGODB_URI=', process.env.MONGODB_URI ? '[redacted]' : '<<not set>>');
+
+// Initialize database before starting server and prevent the app from
+// listening if the connection fails.  Older behavior allowed the server to
+// start and then every request would error with 
+// "Database not initialized. Call initializeDatabase() first." which makes
+// debugging harder.
+(async () => {
+  try {
+    await initializeDatabase();
+  } catch (err) {
+    console.error('[DB] Initialization failed, exiting.');
+    process.exit(1);
+  }
+})();
 
 const app = express();
 

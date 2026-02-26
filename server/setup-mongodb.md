@@ -14,6 +14,12 @@
    - Password: Generate a strong password
 5. **Add IP address**:
    - Choose "Allow access from anywhere" (0.0.0.0/0)
+   
+   > **Tip:** Atlas restricts connections by IP. If you're deploying on a
+   > platform like Render or Vercel, make sure to either whitelist the
+   > provider's outbound IP range or temporarily allow `0.0.0.0/0` while you
+   > test. A misconfigured network access list usually causes the TLS handshake
+   > errors (`ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR`) seen in the logs.
 6. **Get connection string**:
    - Click "Connect" → "Connect your application"
    - Copy the connection string

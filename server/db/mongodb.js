@@ -22,6 +22,8 @@ export async function connectToDatabase() {
     const options = {
       useNewUrlParser: true,
       useUnifiedTopology: true,
+      // Keep selection timeout short in case DNS or network is blocked
+      serverSelectionTimeoutMS: 10000,
     };
 
     // log the URI (masking credentials) to help debugging deployment issues
@@ -40,6 +42,12 @@ export async function connectToDatabase() {
     return db;
   } catch (error) {
     console.error('[MongoDB] Connection error:', error);
+    if (error.name === 'MongoNetworkError') {
+      console.error('[MongoDB] Network error or cluster unreachable.');
+      console.error('          Ensure the URI is correct, the Atlas network access list');
+      console.error('          allows connections from this host (0.0.0.0/0 or specific IPs),');
+      console.error('          and that DNS resolution works in the deployment environment.');
+    }
     // if TLS errors are thrown, provide more guidance
     if (error.message && error.message.includes('tls')) {
       console.error('[MongoDB] TLS/SSL handshake failed. ' +
