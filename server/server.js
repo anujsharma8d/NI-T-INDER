@@ -16,12 +16,15 @@ import { router as games } from "./controllers/game.js";
 import { authMiddleware } from "./middleware.js";
 
 // Initialize database tables on startup
+// This wrapper loads the real initializer from `db/index.js`. Any error
+// is logged and re-thrown so the caller can react (e.g. exit the process).
 async function initializeDatabase() {
   try {
     const { initializeDatabase } = await import('./db/index.js');
     await initializeDatabase();
   } catch (error) {
     console.error("[DB] Error initializing database:", error);
+    throw error; // << propagate so outer caller can terminate
   }
 }
 
