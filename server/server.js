@@ -25,6 +25,9 @@ async function initializeDatabase() {
   }
 }
 
+// Determine port early so logs can reference it
+const PORT = process.env.PORT || 3000;
+
 // Log important configuration so issues can be diagnosed in deployment
 console.log('[Config] NODE_ENV=', process.env.NODE_ENV);
 console.log('[Config] PORT=', PORT);
@@ -49,7 +52,7 @@ const app = express();
 
 /* ================= PORT ================= */
 
-const PORT = process.env.PORT || 3000;
+/* (already declared above for logging) */
 
 /* ============= MIDDLEWARES ============ */
 
