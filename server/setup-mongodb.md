@@ -42,10 +42,18 @@ Add to your `.env` file:
 
 ```env
 # For MongoDB Atlas
+# Use the connection string Atlas generates. It should look like:
+# MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.xxxxx.mongodb.net/nitinder?retryWrites=true&w=majority
+# TLS/SSL is enabled automatically by the driver when you use a +srv
+# URI. You shouldn't need to add any extra flags to the client code.
+# If you see TLS handshake errors (e.g. `ERR_SSL_TLSV1_ALERT_INTERNAL_ERROR`),
+# verify the URI is correct, the deployment platform has network access to
+# Atlas, and that the Node runtime supports the required TLS version.
 MONGODB_URI=mongodb+srv://nitinder:YOUR_PASSWORD@cluster0.xxxxx.mongodb.net/nitinder?retryWrites=true&w=majority
 DATABASE_NAME=nitinder
 
 # For Local MongoDB
+# No TLS required for a local instance; use the standard URI.
 MONGODB_URI=mongodb://localhost:27017
 DATABASE_NAME=nitinder
 

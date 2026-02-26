@@ -12,25 +12,40 @@ export async function connectToDatabase() {
   }
 
   try {
-    // MongoDB connection options with SSL configuration
+    // Use the connection string's defaults rather than forcing TLS flags.
+    // The modern driver automatically enables TLS/SSL for `mongodb+srv` URIs
+    // and respects the `ssl` or `tls` parameters in the URI.  Overriding
+    // with `tlsAllowInvalidCertificates`/`tlsAllowInvalidHostnames` was
+    // causing handshake failures in some hosted environments (Render, etc.)
+    // because it attempted to downgrade/override the server's negotiated
+    // protocol.  Removing those options lets the driver negotiate normally.
     const options = {
-      tls: true,
-      tlsAllowInvalidCertificates: true,
-      tlsAllowInvalidHostnames: true,
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
     };
+
+    // log the URI (masking credentials) to help debugging deployment issues
+    const safeUri = MONGODB_URI.replace(/(mongodb(?:\+srv)?:\/\/)([^:]+):([^@]+)@/, '$1***:***@');
+    console.log('[MongoDB] Connecting with URI', safeUri);
 
     client = new MongoClient(MONGODB_URI, options);
     await client.connect();
     db = client.db(DATABASE_NAME);
-    
+
     console.log(`[MongoDB] Connected to database: ${DATABASE_NAME}`);
-    
+
     // Create indexes for better performance
     await createIndexes();
-    
+
     return db;
   } catch (error) {
     console.error('[MongoDB] Connection error:', error);
+    // if TLS errors are thrown, provide more guidance
+    if (error.message && error.message.includes('tls')) {
+      console.error('[MongoDB] TLS/SSL handshake failed. ' +
+        'Check that the MONGODB_URI is correct, that the server is reachable, ' +
+        'and that your environment supports the required TLS version.');
+    }
     throw error;
   }
 }
